@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IVOLT MOTORS - Driver Registration</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { min-height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url("https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=80"); background-size: cover; background-position: center; }
+        .login-card { width: 430px; padding: 45px; background: rgba(255,255,255,0.97); border-radius: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+        .logo { text-align: center; font-size: 40px; font-weight: bold; margin-bottom: 10px; }
+        .logo span { color: #00bfff; }
+        .role { text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 8px; color: #111; }
+        .subtitle { text-align: center; color: #777; margin-bottom: 30px; }
+        .input-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 7px; font-weight: bold; color: #333; }
+        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 10px; outline: none; font-size: 15px; }
+        input:focus { border-color: #0072ff; box-shadow: 0 0 8px rgba(0,114,255,0.25); }
+        .login-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: linear-gradient(135deg, #00d9ff, #0072ff); color: white; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,114,255,0.4); }
+        .back { display: block; text-align: center; margin-top: 22px; color: #0072ff; text-decoration: none; font-weight: bold; }
+        .error { color: #e53935; text-align: center; margin-top: 15px; display: none; }
+        .success { color: #2e7d32; text-align: center; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+<div class="login-card">
+    <div class="logo"><span>IVOLT</span> MOTORS</div>
+    <div class="role">Driver Registration</div>
+    <div class="subtitle">Create a new driver account</div>
+    <form onsubmit="driverRegister(event)">
+        <div class="input-group">
+            <label>Driver Name</label>
+            <input type="text" id="regName" placeholder="Enter Full Name" required>
+        </div>
+        <div class="input-group">
+            <label>Driver ID</label>
+            <input type="text" id="regId" placeholder="Create Driver ID (e.g., DRV999)" required>
+        </div>
+        <div class="input-group">
+            <label>Car Reg Number</label>
+            <input type="text" id="regCar" placeholder="e.g., TN 28 AA 1111" required>
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="regPassword" placeholder="Create Password" required>
+        </div>
+        <button type="submit" class="login-btn">Register</button>
+        <div class="error" id="errorMessage">Error registering.</div>
+        <div class="success" id="successMessage">Registration successful! Redirecting...</div>
+    </form>
+    <a href="Driver login.html" class="back">← Back to Login</a>
+</div>
+<script>
+async function driverRegister(event) {
+    event.preventDefault();
+    const name = document.getElementById("regName").value.trim();
+    const driver_id = document.getElementById("regId").value.trim();
+    const car_regno = document.getElementById("regCar").value.trim();
+    const password = document.getElementById("regPassword").value;
+
+    try {
+        const response = await fetch("/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, driver_id, car_regno, password })
+        });
+        const data = await response.json();
+        if (data.success) {
+            document.getElementById("errorMessage").style.display = "none";
+            document.getElementById("successMessage").style.display = "block";
+            setTimeout(() => { window.location.href = "Driver login.html"; }, 1500);
+        } else {
+            document.getElementById("errorMessage").innerText = data.message || "Driver ID already exists!";
+            document.getElementById("errorMessage").style.display = "block";
+        }
+    } catch (error) {
+        document.getElementById("errorMessage").innerText = "Cannot connect to server";
+        document.getElementById("errorMessage").style.display = "block";
+    }
+}
+</script>
+</body>
+</html>

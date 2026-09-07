@@ -24,17 +24,44 @@ def driver_login():
     username = data.get('username')
     password = data.get('password')
     
-    # Verify driver against the dataset (Assuming you have a 'Driver_ID' column)
+    # Verify driver against the dataset
     driver = df[df['Driver_ID'] == username]
     
-    # Note: If you have a password column in your CSV, you can add: and driver.iloc[0]['Password'] == password
-    if not driver.empty: 
+    # Check if driver exists and the password matches
+    if not driver.empty and str(driver.iloc[0].get('Driver_Password', '')) == password: 
         return jsonify({
             "success": True, 
             "driver_id": username, 
             "car_regno": str(driver.iloc[0].get('Car_RegNo', 'Unknown'))
         })
     return jsonify({"success": False})
+
+@app.route('/api/register', methods=['POST'])
+def driver_register():
+    global df
+    data = request.json
+    driver_id = data.get('driver_id')
+    
+    # 1. Check if driver ID already exists
+    if driver_id in df['Driver_ID'].values:
+        return jsonify({"success": False, "message": "Driver ID already exists!"})
+        
+    # 2. Create a new row for the CSV
+    new_row = pd.Series(dtype='object')
+    new_row['Driver_ID'] = driver_id
+    new_row['Driver_Name'] = data.get('name')
+    new_row['Car_RegNo'] = data.get('car_regno')
+    new_row['Driver_Password'] = data.get('password')
+    
+    # Insert default fallback telemetry so the dashboard doesn't crash on login
+    new_row['Battery_Capacity_kWh'] = 40.5
+    new_row['Estimated Range_Range'] = 450
+    
+    # 3. Append to the dataframe and save back to the CSV file permanently
+    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    df.to_csv("EV-MODEL-DATASET20.csv", index=False)
+    
+    return jsonify({"success": True})
 
 @app.route('/api/admin-login', methods=['POST'])
 def admin_login():
